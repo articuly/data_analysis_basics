@@ -1,3 +1,4 @@
+# coding:utf-8
 import numpy as np
 
 file = r'D:\Programing\python_projects\data_analysis_basics\data_set\rating.txt'
