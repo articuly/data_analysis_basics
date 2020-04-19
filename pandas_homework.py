@@ -56,6 +56,6 @@ top10_book = top50_book[:10]
 bar = Bar(init_opts=opts.InitOpts(theme=ThemeType.LIGHT, width='1280px', height='720px'))
 bar.add_xaxis(top10_book['title'].tolist())
 bar.add_yaxis('书籍', top10_book['to_read_count'].tolist())
-bar.set_global_opts(title_opts=opts.TitleOpts(title='最热门的20本书', subtitle='英文读物'),
+bar.set_global_opts(title_opts=opts.TitleOpts(title='最热门的10本书', subtitle='英文读物'),
                     xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=30)))
 bar.render(path='top10_books.html')
