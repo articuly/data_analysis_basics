@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-import numpy as np
+import math
 import jieba
 from pyecharts.charts import WordCloud
 import pyecharts.options as opts
@@ -35,6 +35,7 @@ def get_comment_keywords_counts(movie_id, count):
         stop_words = f.read()
     stop_words = stop_words.replace('\n', '|')  # 转换正则格式的字符串
     keywords_counts = keywords_counts[~keywords_counts.str.contains(stop_words)]  # ~取反逻辑，表示不包含停用词
+    keywords_counts = keywords_counts[~keywords_counts.str.contains('...')]  # ~取反逻辑，表示不包含停用词
     # 取出前若干个分词
     keywords_counts = keywords_counts.value_counts()[:count]
     # print(keywords_counts)
@@ -55,16 +56,43 @@ def get_movie_name_and_score(movie_id):
     search_result = movie_data[movie_data['链接'] == movie_link].iloc[0]
     movie_name = search_result['电影名']
     movie_score = search_result['评分']
+    print(movie_name, movie_score)
     return (movie_name, movie_score)
 
 
 # movie_id = '1292052'
 # keywords_counts = get_comment_keywords_counts(movie_id, 30)
+# print(keywords_counts)
 # movie_name, movie_score = get_movie_name_and_score(movie_id)
 # path_name = 'wordcloud\{0}_{1}.html'.format(movie_name, movie_score)
 # generate_word_cloud(keywords_counts, path_name)
 
-
+# 创建两个二维空列表存放，不同评分区间的评论和计数
 kw_list_by_score = [[] for _ in range(10)]
 kw_counts_list_by_score = [[] for _ in range(10)]
-print(kw_list_by_score)
+
+# 取得电影列表
+movie_id_list = get_movie_id_list(300)
+for movie_id in movie_id_list:
+    word_list = get_comment_keywords_counts(movie_id, 30)
+    # print(word_list)
+    movie_name, movie_score = get_movie_name_and_score(movie_id)
+    try:
+        kw_list_by_score[math.floor(movie_score)].extend(word_list.index)  # 分区间添加关键词
+        kw_counts_list_by_score[math.floor(movie_score)].extend(word_list.values)  # 分区间添加计数
+    except:
+        print(movie_id)  # 如果无评分数据，则打印电影ID
+
+for i in range(10):
+    if kw_list_by_score[i]:  # 如果评分区间存在，则建立DF
+        kw30_with_counts = pd.DataFrame({
+            'kw': kw_list_by_score[i],
+            'counts': kw_counts_list_by_score[i]
+        })
+        kw30_with_counts = kw30_with_counts.groupby('kw').sum()  # 关键词累计加总
+        kw30_with_counts = kw30_with_counts.sort_values(by='counts', ascending=False)[:30]
+        counts_sum = kw30_with_counts['counts'].sum()
+        kw30_with_counts['percentage'] = kw30_with_counts['counts'] / counts_sum  # 计算关键词百分比
+        kw30_with_counts.to_csv(r'.\data_set\{0}_movie_keywords.csv'.format(i))
+
+input('输入任意字符退出')
