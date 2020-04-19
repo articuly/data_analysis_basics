@@ -1,15 +1,17 @@
 import sqlite3
 import pandas as pd
+import numpy as np
 import jieba
 from pyecharts.charts import WordCloud
 import pyecharts.options as opts
 
 # 读取数据
-conn = sqlite3.connect(r'D:\Programing\python_projects\data_analysis_basics\data_set\douban_comment_data.db')
+conn = sqlite3.connect(r'.\data_set\douban_comment_data.db')
 comment_data = pd.read_sql_query('select * from comment;', conn)
+movie_data = pd.read_excel(r'.\data_set\douban_movie_data.xlsx')
 
 
-# 得到至少包含一定评论数的电影ID列表
+# 得到至少包含一定评论数的电影ID列表，从多到少排列
 def get_movie_id_list(minimum_comment):
     movie_list = comment_data['MOVIEID'].value_counts()  # 统计各电影ID的评论数
     movie_list = movie_list[movie_list.values > minimum_comment]
@@ -39,8 +41,30 @@ def get_comment_keywords_counts(movie_id, count):
     return keywords_counts
 
 
-keywords_counts = get_comment_keywords_counts('1292052', 30)
-wordcloud = WordCloud()
-wordcloud.add('词云图', tuple(zip(keywords_counts.index, keywords_counts)), word_size_range=[20, 100])
-wordcloud.set_global_opts(title_opts=opts.TitleOpts(title='《肖申克的救赎》评论'))
-wordcloud.render()
+def generate_word_cloud(word_list, path_name=None):
+    wordcloud = WordCloud()
+    wordcloud.add('词云图', tuple(zip(word_list.index, word_list)), word_size_range=[20, 100])
+    wordcloud.set_global_opts(title_opts=opts.TitleOpts(title='电影评论'))
+    wordcloud.render(path=path_name)
+    print(f'Generate word cloud file done: {path_name}')
+
+
+# 根据电影ID在xlsx文件找到电影名和评分
+def get_movie_name_and_score(movie_id):
+    movie_link = 'https://movie.douban.com/subject/{0}/'.format(movie_id)
+    search_result = movie_data[movie_data['链接'] == movie_link].iloc[0]
+    movie_name = search_result['电影名']
+    movie_score = search_result['评分']
+    return (movie_name, movie_score)
+
+
+# movie_id = '1292052'
+# keywords_counts = get_comment_keywords_counts(movie_id, 30)
+# movie_name, movie_score = get_movie_name_and_score(movie_id)
+# path_name = 'wordcloud\{0}_{1}.html'.format(movie_name, movie_score)
+# generate_word_cloud(keywords_counts, path_name)
+
+
+kw_list_by_score = [[] for _ in range(10)]
+kw_counts_list_by_score = [[] for _ in range(10)]
+print(kw_list_by_score)
