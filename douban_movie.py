@@ -9,6 +9,8 @@ import pyecharts.options as opts
 conn = sqlite3.connect(r'.\data_set\douban_comment_data.db')
 comment_data = pd.read_sql_query('select * from comment;', conn)
 movie_data = pd.read_excel(r'.\data_set\douban_movie_data.xlsx')
+FILTER_WORDS = ['知道', '影评', '电影', '影片', '这么', '那么', '怎么', '如果', '是', '的', '地', '得', '这个', '这种', '一个',
+                '时候', '什么', '一部', '这部', '没有', '还有', '片子', '觉得', 'is', 'of', 'to', 'be', '...', '\n']
 
 
 # 得到至少包含一定评论数的电影ID列表，从多到少排列
@@ -30,18 +32,18 @@ def get_comment_keywords_counts(movie_id, count):
     # 过滤一个字的分词
     keywords_counts = pd.Series(seg_list)
     keywords_counts = keywords_counts[keywords_counts.str.len() > 1]
-    # 过滤停用词
-    with open('my_stopwords.txt', encoding='utf-8') as f:
-        stop_words = f.read()
-    stop_words = stop_words.replace('\n', '|')  # 转换正则格式的字符串
-    keywords_counts = keywords_counts[~keywords_counts.str.contains(stop_words)]  # ~取反逻辑，表示不包含停用词
-    keywords_counts = keywords_counts[~keywords_counts.str.contains('...')]  # ~取反逻辑，表示不包含停用词
+    # # 过滤停用词
+    # with open('my_stopwords.txt', encoding='utf-8') as f:
+    #     stop_words = f.read()
+    # stop_words = stop_words.replace('\n', '|')  # 转换正则格式的字符串
+    keywords_counts = keywords_counts[~keywords_counts.str.contains('|'.join(FILTER_WORDS))]  # ~取反逻辑，表示不包含停用词
     # 取出前若干个分词
     keywords_counts = keywords_counts.value_counts()[:count]
     # print(keywords_counts)
     return keywords_counts
 
 
+# 生成词云图
 def generate_word_cloud(word_list, path_name=None):
     wordcloud = WordCloud()
     wordcloud.add('词云图', tuple(zip(word_list.index, word_list)), word_size_range=[20, 100])
@@ -83,6 +85,7 @@ for movie_id in movie_id_list:
     except:
         print(movie_id)  # 如果无评分数据，则打印电影ID
 
+# 写入不同评分区间关键词汇总后的比例
 for i in range(10):
     if kw_list_by_score[i]:  # 如果评分区间存在，则建立DF
         kw30_with_counts = pd.DataFrame({
