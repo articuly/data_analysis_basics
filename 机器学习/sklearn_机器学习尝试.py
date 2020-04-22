@@ -64,8 +64,23 @@ feature_importance_df = pd.DataFrame({
 })
 feature_importance_df.sort_values(by='importance', ascending=False, inplace=True)
 bar = Bar(init_opts=opts.InitOpts(width='1280px', height='720px'))
-bar.add_yaxis('各特征重要性', list(feature_importance_df.importance))
+bar.add_yaxis('各特征重要性', list(feature_importance_df['importance'].apply(lambda x: round(x*100,4))))
 bar.add_xaxis(list(feature_importance_df.name))
 bar.render(path='各特征重要性.html')
 
 # 使用随机搜索调节参数
+n_estimators_range = np.arange(100, 1000, 100)
+max_depth_range = np.arange(3, 10)
+learn_rate_range = [0.001, 0.001, 0.01, 0.1]
+param_grid = {
+    'n_estimators': n_estimators_range,
+    'max_depth': max_depth_range,
+    'learning_rate': learn_rate_range
+}
+gbr_search = RandomizedSearchCV(gbr_reg, param_grid, n_iter=30)  # 测试30次
+gbr_search.fit(X_train, y_train)
+for result in gbr_search.cv_results_:
+    print(result)
+print(gbr_search.best_score_)
+print(gbr_search.best_params_)
+print(gbr_search.best_estimator_)
