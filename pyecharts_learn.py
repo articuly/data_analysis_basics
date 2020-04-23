@@ -28,4 +28,4 @@ bar.set_series_opts(label_opts=opts.LabelOpts(is_show=False),
                         data=[opts.MarkLineItem(type_='average', name='平均值'), ]))
 # 绘制
 bar.reversal_axis()
-bar.render()
+bar.render('pyecharts-bar.html')

@@ -4,9 +4,10 @@ import pyecharts.options as opts
 
 # 建立空表存放关键词与评分之间比例
 kw_counts_by_score = [[] for _ in range(10)]
-for i in range(9, 3, -1):
+for i in range(4, 10):
     kw_counts_by_score[i] = pd.read_csv(r'.\data_set\{0}_movie_keywords.csv'.format(i))
-    kw_percentage_df = pd.DataFrame([], columns=list(range(4, 10)), index=kw_counts_by_score[9]['kw'][:10])
+
+kw_percentage_df = pd.DataFrame([], columns=list(range(4, 10)), index=kw_counts_by_score[9]['kw'][:10])
 
 # 将数据写入空表
 for i in range(4, 10):
