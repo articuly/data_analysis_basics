@@ -3,7 +3,7 @@ from peewee import Model
 from peewee import CharField, DateField, ForeignKeyField
 from datetime import date
 
-db = SqliteDatabase('people.db')
+db = SqliteDatabase(r'.\data_set\people.db')
 
 
 class Person(Model):
@@ -28,9 +28,9 @@ class Pet(Model):
 # db.create_tables([Person, Pet])
 
 # 增加
-# uncle_bob = Person(name='Bob', birthday=date(1960, 1, 12))
-# uncle_bob.save()
-# sam = Person.create(name='Sam', birthday=date(1970, 4, 5))
+uncle_bob = Person(name='Bob', birthday=date(1960, 1, 12))
+uncle_bob.save()
+sam = Person.create(name='Sam', birthday=date(1970, 4, 5))
 
 # 查找或增加
 user1, created1 = Person.get_or_create(name='Sam')
